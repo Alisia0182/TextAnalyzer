@@ -16,36 +16,45 @@ import java.util.stream.IntStream;
 
 public final class WordGraph {
 	private static final Pattern SPACE = Pattern.compile(" ");
+
 	/*
-	* The main function needs to create a word graph of the text files provided in arg[0]
-	* The output of the word graph should be written to arg[1]
-	*/
-    public static void main(String[] args) throws Exception {
-		if(args.length < 1) {
+	 * The main function needs to create a word graph of the text files provided in
+	 * arg[0]
+	 * The output of the word graph should be written to arg[1]
+	 */
+	public static void main(String[] args) throws Exception {
+		if (args.length < 1) {
 			System.err.println("Usage: JavaWordCount <file>");
 			System.exit(1);
 		}
-		
-        PrintStream ps = new PrintStream(new FileOutputStream(args[1]));
+
+		PrintStream ps = new PrintStream(new FileOutputStream(args[1]));
 		System.setOut(ps);
 
 		SparkSession spark = SparkSession
-							.builder()
-							.appName("JavaWordGraph")
-							.getOrCreate();
-		
-		JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
-		JavaRDD<String> words = lines.flatMap(s -> Arrays.asList(SPACE.split(s)).iterator());
+				.builder()
+				.appName("JavaWordGraph")
+				.getOrCreate();
 
-		JavaPairRDD<String, Integer> ones = words.mapToPair(s -> new Tuple2<>(s,1));
+		JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
+		// convert to lower case
+		// non-alphanumeric characters ==> white-space
+		// splited by white-space
+		JavaRDD<String> words = lines.flatMap(s -> Arrays.asList(
+				SPACE.split(
+						s.toLowerCase()
+								.replaceAll("[^A-Za-z0-9]", " ")))
+				.iterator());
+
+		JavaPairRDD<String, Integer> ones = words.mapToPair(s -> new Tuple2<>(s, 1));
 		JavaPairRDD<String, Integer> counts = ones.reduceByKey((i1, i2) -> i1 + i2);
 
 		List<Tuple2<String, Integer>> output = counts.collect();
-		
-		for(Tuple2<?,?> tuple: output){
+
+		for (Tuple2<?, ?> tuple : output) {
 			System.out.println(tuple._1() + ": " + tuple._2());
 
 		}
 		spark.stop();
-    }
+	}
 }
