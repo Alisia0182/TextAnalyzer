@@ -26,7 +26,7 @@ public final class WordGraph {
 			System.exit(1);
 		}
 		
-        PrintStream ps = new PrintStream(new FileOutputStream("out.txt"));
+        PrintStream ps = new PrintStream(new FileOutputStream(args[1]));
 		System.setOut(ps);
 
 		SparkSession spark = SparkSession
