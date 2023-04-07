@@ -51,7 +51,8 @@ public final class WordGraph {
 			int len = words.length;
 			if(len >= 2){
 				for(int i = 0; i < len - 1; ++ i){
-					coOccurCountTuples.add(new Tuple2<>(new Tuple2<>(words[i], words[i + 1]),1));
+					if(words[i].length() != 0 && words[i + 1].length() != 0)
+						coOccurCountTuples.add(new Tuple2<>(new Tuple2<>(words[i], words[i + 1]),1));
 				}
 			}
 			return coOccurCountTuples.iterator();
@@ -71,7 +72,8 @@ public final class WordGraph {
 			pair -> {
 				return new Tuple2<>(pair._1(), pair._2()._2());
 			}
-		);
+		)
+		.reduceByKey((x,y)->x + y);
 		
 		// join: (word1, ((word2, # of pairs), # of word1))
 		JavaPairRDD<String, Tuple2< Tuple2<String, Integer>, Integer>> joinedRDD = prePairRDD.join(preCounterRDD);
@@ -96,6 +98,7 @@ public final class WordGraph {
 			Iterable<Tuple2 <Tuple2<String, Double>, Integer>> pairs = group._2();// Weird
 			boolean firstPair = true;
 			for(Tuple2 <Tuple2<String, Double>, Integer> pair:pairs){
+				
 				if(firstPair){
 					System.out.println(key + " " + pair._2());
 					firstPair = false;
