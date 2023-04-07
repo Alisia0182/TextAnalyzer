@@ -1,4 +1,4 @@
-#!/bin/sh
+ #!/bin/sh
 
 mkdir /tmp/spark-events
 /opt/spark/sbin/start-history-server.sh
@@ -8,3 +8,4 @@ mkdir /tmp/spark-events
 /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --cores 1 --webui-port 9093 "`hostname`:7077" &
 /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --cores 1 --webui-port 9094 "`hostname`:7077" &
 /bin/bash
+
