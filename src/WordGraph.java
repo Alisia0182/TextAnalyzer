@@ -67,7 +67,7 @@ public final class WordGraph {
 		// (word1, # of word1)
 		JavaPairRDD<String, Integer> preCounterRDD = prePairRDD.mapToPair(
 			pair -> {
-				return new Tuple2<>(pair._1, pair._2._2);
+				return new Tuple2<>(pair._1(), pair._2()._2());
 			}
 		);
 		
@@ -78,31 +78,22 @@ public final class WordGraph {
 		// (word1, ((word2, # of pairs / # of word1), # of word1))
 		JavaPairRDD<String, Tuple2 <Tuple2<String, Double>, Integer>> calculatedRDD = joinedRDD.mapToPair(
 			pair -> {
-				Double fraction = (Double) pair._2._1._2/pair._2._2;
-				return new Tuple2<>(pair._1, new Tuple2<>(new Tuple2<>(pair._2._1._1, fraction),pair._2._2));
+				Double fraction = (Double) pair._2()._1()._2/pair._2()._2();
+				return new Tuple2<>(pair._1, new Tuple2<>(new Tuple2<>(pair._2()._1()._1(), fraction),pair._2()._2()));
 			}
 		);
 
-		// How to print out		
+		// How to print out, with the output grouped by word1 <== groupByKey
 		/* TODO:
 		 * Print out
 		 */
+		JavaPairRDD<String, Iterable<Tuple2 <Tuple2<String, Double>, Integer>>> groupedRDD = calculatedRDD.groupByKey();
 
-		/**Begin: For Word Count, Remember to delete */
-		// splited by white-space
-		JavaRDD<String> words = convertedLines.flatMap(s -> Arrays.asList(
-				SPACE.split(s))
-				.iterator());
-		
-		JavaPairRDD<String, Integer> ones = words.mapToPair(s -> new Tuple2<>(s, 1));
-		JavaPairRDD<String, Integer> counts = ones.reduceByKey((i1, i2) -> i1 + i2);
-		List<Tuple2<String, Integer>> output = counts.collect();
-
-		for (Tuple2<?, ?> tuple : output) {
-			System.out.println(tuple._1() + ": " + tuple._2());
+		for(Tuple2<String, Iterable<Tuple2 <Tuple2<String, Double>, Integer>>>group : groupedRDD.collect()){
+			String key = group._1();
+			Iterable<Tuple2 <Tuple2<String, Double>, Integer>> pairs = group._2();
+			System.out.println("<" + pairs._1()._1() + "," + pairs._1()._2() + ">");
 		}
-		/**End: For Word Count, Remember to delete */
-
 		spark.stop();
 	}
 }
