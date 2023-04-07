@@ -7,6 +7,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import com.google.common.collect.Lists;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
@@ -90,7 +91,7 @@ public final class WordGraph {
 		 /* How to print out, with the output grouped by word1 <== groupByKey
 		 * Print out
 		 */
-		
+		DecimalFormat df = new DecimalFormat("#.000");
 		JavaPairRDD<String, Iterable<Tuple2 <Tuple2<String, Double>, Integer>>> groupedRDD = calculatedRDD.groupByKey();
 
 		for(Tuple2<String, Iterable<Tuple2 <Tuple2<String, Double>, Integer>>>group : groupedRDD.collect()){
@@ -103,7 +104,7 @@ public final class WordGraph {
 					System.out.println(key + " " + pair._2());
 					firstPair = false;
 				}
-				System.out.println("<" + pair._1()._1() + "," + pair._1()._2() + ">");
+				System.out.println("<" + pair._1()._1() + "," + df.format(pair._1()._2()) + ">");
 			}
 		}
 
