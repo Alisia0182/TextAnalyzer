@@ -54,25 +54,36 @@ public final class WordGraph {
 			}
 			return Arrays.asList(coOccurCountTuples).iterator();
 		})
-		// count co-occur
 		.reduceByKey((x,y) -> x + y);
-        
-		
-        // TODO: calculate the total count of predecessors for each word
-		// 1. Group by the pre-word? ==> for predecessor count
-		JavaPairRDD<String, Iterable<Tuple2<String, String>, Integer>> groupedPair 
-		= coOccurCountTuples.groupBy(pair-> pair._1._1);
-		// 2. get predecessor counts ??
-		/* 
-		JavaPairRDD<String, Integer> preCounts = groupedPair.map(list->{
-			Integer sum = 0;
-			for( : list){
-				sum += 
+        // ((word1, word2), # of pairs)
+
+		// (word1, (word2, # of pairs))
+		JavaPairRDD<String, Tuple2<String, Integer>> prePairRDD = pairRdd.mapToPair(
+			pair -> {
+				return new Tuple2<>(pair._1._1,new Tuple2<>(pair._1._2, pair._2));
 			}
-			return sum;
-		});
-		*/
+		);
+
+		// (word1, # of word1)
+		JavaPairRDD<String, Integer> preCounterRDD = prePairRDD.mapToPair(
+			pair -> {
+				return new Tuple2<>(pair._1, pair._2._2);
+			}
+		);
 		
+		// join: (word1, ((word2, # of pairs), # of word1))
+		JavaPairRDD<String, Tuple2< Tuple2<String, Integer>, Integer>> joinedRDD = prePairRDD.join(preCounterRDD);
+
+		// mapToPair: to calculate fractions
+		// (word1, ((word2, # of pairs / # of word1), # of word1))
+		JavaPairRDD<String, Tuple2 <Tuple2<String, Double>, Integer>> calculatedRDD = joinedRDD.mapToPair(
+			pair -> {
+				Double fraction = (Double) pair._2._1._2/pair._2._2;
+				return new Tuple2<>(pair._1, new Tuple2<>(new Tuple2<>(pair._2._1._1, fraction),pair._2._2));
+			}
+		);
+
+		// How to print out		
 		/* TODO:
 		 * Print out
 		 */
