@@ -52,8 +52,14 @@ public final class WordGraph {
 			int len = words.length;
 			if(len >= 2){
 				for(int i = 0; i < len - 1; ++ i){
-					if(words[i].length() != 0 && words[i + 1].length() != 0)
-						coOccurCountTuples.add(new Tuple2<>(new Tuple2<>(words[i], words[i + 1]),1));
+					if(words[i].length() != 0){
+						int j = i + 1;
+						while(j < len && words[j].length() == 0) ++ j;
+						if(j < len)
+							coOccurCountTuples.add(new Tuple2<>(new Tuple2<>(words[i], words[j]),1));
+						else
+							break;
+					}
 				}
 			}
 			return coOccurCountTuples.iterator();
