@@ -82,6 +82,31 @@ public final class WordGraph {
 		)
 		.reduceByKey((x,y)->x + y);
 		
+		// (word1, # of edges-of-word1)
+		JavaPairRDD<String, Tuple2<String, Integer>> cntEdgeRDD = pairRdd.mapToPair(
+			pair -> {
+				return new Tuple2<>(pair._1()._1(),new Tuple2<>(pair._1()._2(), 1));
+			}
+		);
+		JavaPairRDD<String, Integer> edgeCounterRDD = cntEdgeRDD.mapToPair(
+			pair -> {
+				return new Tuple2<>(pair._1, pair._2()._2());
+			}
+		)
+		.reduceByKey((x, y) -> x + y);
+		/*
+		// print out
+		for(Tuple2<String, Integer> entry : edgeCounterRDD.collect()){
+			String key = entry._1();
+			Integer num = entry._2();
+			System.out.println(key + " " + num);
+		}
+		
+		for(int i = 0; i < 40; ++ i) {
+			Sytem.out.print("#");
+		}
+		Sytem.out.println("");
+		*/
 		// join: (word1, ((word2, # of pairs), # of word1))
 		JavaPairRDD<String, Tuple2< Tuple2<String, Integer>, Integer>> joinedRDD = prePairRDD.join(preCounterRDD);
 
@@ -93,12 +118,22 @@ public final class WordGraph {
 				return new Tuple2<>(pair._1, new Tuple2<>(new Tuple2<>(pair._2()._1()._1(), fraction),pair._2()._2()));
 			}
 		);
+		
+		// (word1, (word2, # of pairs / # of word1))
+		JavaPairRDD<String, Tuple2<String, Double> > fracRDD = calculatedRDD.mapToPair(
+			pair -> {
+				return new Tuple2<>(pair._1, pair._2()._1());
+			}
+		);
+		
+		// (word1, (word2, # of pairs / # of word1), # of edges-of-word1)
+		JavaPairRDD<String, Tuple2< Tuple2<String, Double>, Integer>> finalRDD = fracRDD.join(edgeCounterRDD);
 
 		 /* How to print out, with the output grouped by word1 <== groupByKey
 		 * Print out
 		 */
 		DecimalFormat df = new DecimalFormat("#.000");
-		JavaPairRDD<String, Iterable<Tuple2 <Tuple2<String, Double>, Integer>>> groupedRDD = calculatedRDD.groupByKey();
+		JavaPairRDD<String, Iterable<Tuple2 <Tuple2<String, Double>, Integer>>> groupedRDD = finalRDD.groupByKey();
 
 		for(Tuple2<String, Iterable<Tuple2 <Tuple2<String, Double>, Integer>>>group : groupedRDD.collect()){
 			String key = group._1();
