@@ -2,6 +2,7 @@ import scala.Tuple2;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.commons.io.FileUtils;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -29,7 +30,8 @@ public final class WordGraph {
 			System.exit(1);
 		}
 
-		PrintStream ps = new PrintStream(new FileOutputStream(args[1]));
+		FileOutputStream s = FileUtils.openOutputStream(new File(args[1]));
+		PrintStream ps = new PrintStream(s);
 		System.setOut(ps);
 
 		SparkSession spark = SparkSession
