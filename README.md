@@ -18,5 +18,5 @@ and the second as the successor.
 
 ## 2 Creating a Spark Environment
 To help with your implementation, a Docker image has been created with Spark and other relevant
-dependencies. Set up the Docker image and ru the code template
+dependencies. Set up the Docker image and run the code template
 in a Docker container.
