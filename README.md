@@ -1,5 +1,4 @@
 # TextAnalyzer_Spark
-WordGraph
 
 In this project, Apache Spark is used to analyze a text dataset. Specifically, we will build
 a directed graph where the vertices are words in the dataset, and edges are directed from a predecessor
